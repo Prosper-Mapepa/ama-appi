@@ -27,7 +27,9 @@ async function bootstrap() {
     prefix: '/uploads/',
   });
   const port = process.env.PORT ? Number(process.env.PORT) : 4000;
-  await app.listen(port);
-  console.log(`🚀 Backend running on http://localhost:${port}/api`);
+  const host = process.env.HOST || '0.0.0.0';
+  await app.listen(port, host);
+  const displayHost = host === '0.0.0.0' ? 'localhost' : host;
+  console.log(`🚀 Backend running on http://${displayHost}:${port}/api`);
 }
 void bootstrap();

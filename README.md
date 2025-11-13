@@ -110,7 +110,15 @@ Each module contains:
 - Provide production-ready values for `DATABASE_URL`, `PORT`, and `FRONTEND_URL`.
 - Replace the seeded admin credentials and `JWT_SECRET` with secure values before launch.
 
-### 9. Troubleshooting
+### 9. Deploying on Render
+
+1. Install the Render CLI or use the dashboard to create a new Blueprint deploy from this repository.
+2. The included `render.yaml` provisions a PostgreSQL database and a Node web service with sensible defaults for NestJS.
+3. After the first deploy, update the generated `JWT_SECRET` and `FRONTEND_URL` values in the Render dashboard to match your production domains.
+4. Render exposes an ephemeral filesystem—configure `uploads/` to use an external object store (S3/R2/etc.) if you need persistence beyond one deploy.
+5. Trigger a new deploy; the build runs `pnpm run build` and the service starts with `pnpm run start:prod`.
+
+### 10. Troubleshooting
 
 - **CORS errors** – Check `FRONTEND_URL` and ensure it includes the deployed domain(s).
 - **Database connection failures** – Validate the `DATABASE_URL` and Postgres availability.
