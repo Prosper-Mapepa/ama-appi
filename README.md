@@ -114,7 +114,7 @@ Each module contains:
 
 1. Install the Render CLI or use the dashboard to create a new Blueprint deploy from this repository.
 2. The included `render.yaml` provisions a PostgreSQL database and a Node web service with sensible defaults for NestJS.
-3. After the first deploy, update the generated `JWT_SECRET` and `FRONTEND_URL` values in the Render dashboard to match your production domains.
+3. Render will pre-fill `FRONTEND_URL` with `https://ama-cmu.netlify.app`; adjust if your frontend domain changes. Update the generated `JWT_SECRET` after the first deploy.
 4. Render exposes an ephemeral filesystem—configure `uploads/` to use an external object store (S3/R2/etc.) if you need persistence beyond one deploy.
 5. Trigger a new deploy; the build runs `pnpm run build` and the service starts with `pnpm run start:prod`.
 
