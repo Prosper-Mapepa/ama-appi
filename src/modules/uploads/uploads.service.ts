@@ -53,10 +53,10 @@ export class UploadsService {
     if (!existsSync(this.localUploadDir)) {
       mkdirSync(this.localUploadDir, { recursive: true });
     }
-    this.localBaseUrl =
-      this.config
-        .get<string>('MEDIA_BASE_URL', this.config.get<string>('API_BASE_URL'))
-        ?.replace(/\/$/, '') ?? 'http://localhost:4000';
+    const mediaBaseUrl = this.config.get<string>('MEDIA_BASE_URL');
+    const apiBaseUrl = this.config.get<string>('API_BASE_URL');
+    const fallbackBaseUrl = mediaBaseUrl ?? apiBaseUrl ?? 'http://localhost:4000';
+    this.localBaseUrl = fallbackBaseUrl.replace(/\/$/, '');
   }
 
   async uploadImage(file: Express.Multer.File): Promise<UploadResult> {
