@@ -33,6 +33,12 @@ JWT_EXPIRES_IN=1d
 ADMIN_EMAIL=admin@ama-cmu.org
 ADMIN_PASSWORD=Letmein@99x!
 ADMIN_NAME=Site Administrator
+MEDIA_BASE_URL=http://localhost:4000
+R2_ACCOUNT_ID=your-cloudflare-account-id
+R2_ACCESS_KEY_ID=your-r2-access-key
+R2_SECRET_ACCESS_KEY=your-r2-secret
+R2_BUCKET_NAME=ama-media
+R2_PUBLIC_BASE_URL=https://<account-id>.r2.cloudflarestorage.com/ama-media
 ```
 
 `DATABASE_URL` must be a valid PostgreSQL connection string. `FRONTEND_URL` accepts a comma‑separated list of origins for CORS.  
@@ -115,8 +121,21 @@ Each module contains:
 1. Install the Render CLI or use the dashboard to create a new Blueprint deploy from this repository.
 2. The included `render.yaml` provisions a PostgreSQL database and a Node web service with sensible defaults for NestJS.
 3. Render will pre-fill `FRONTEND_URL` with `https://ama-cmu.netlify.app`; adjust if your frontend domain changes. Update the generated `JWT_SECRET` after the first deploy.
-4. Render exposes an ephemeral filesystem—configure `uploads/` to use an external object store (S3/R2/etc.) if you need persistence beyond one deploy.
-5. Trigger a new deploy; the build runs `pnpm run build` and the service starts with `pnpm run start:prod`.
+4. Configure the following environment variables in the Render dashboard:
+   - `DATABASE_URL` (from the linked Postgres instance – choose the *internal* URL)
+   - `DATABASE_SSL=true`
+   - `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_PUBLIC_BASE_URL`
+   - `FRONTEND_URL`, `JWT_SECRET`, `NODE_ENV=production`
+5. Render exposes an ephemeral filesystem—file uploads automatically fall back to local disk for development but **production must use Cloudflare R2** (see below).
+6. Trigger a new deploy; the build runs `pnpm run build` and the service starts with `pnpm run start:prod`.
+
+#### 9.1 Cloudflare R2 media storage
+
+1. In Cloudflare → R2, create a bucket (e.g. `ama-media`) and enable a public endpoint or custom domain.
+2. Generate an API token with `Edit` permissions and copy the Account ID, Access Key, and Secret Key.
+3. Set `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, and `R2_PUBLIC_BASE_URL` (the bucket’s public URL) in Render.
+4. The backend will stream uploads to R2 whenever those variables are present; otherwise it stores files locally under `/uploads` for development.
+5. Existing CRUD endpoints continue to store and return the absolute URL for each uploaded asset—no frontend changes needed.
 
 ### 10. Troubleshooting
 

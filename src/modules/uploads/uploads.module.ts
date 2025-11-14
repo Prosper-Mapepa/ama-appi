@@ -1,51 +1,21 @@
 import { Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { MulterModule } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
+import { ConfigModule } from '@nestjs/config';
+import { memoryStorage } from 'multer';
 import type { FileFilterCallback } from 'multer';
 import type { Request } from 'express';
-import { extname, join } from 'path';
-import { existsSync, mkdirSync } from 'fs';
-import { randomUUID } from 'crypto';
 import { UploadsController } from './uploads.controller';
-
-type IncomingImageFile = {
-  originalname: string;
-  mimetype: string;
-};
-
-function ensureUploadDirectory(): string {
-  const uploadDir = join(process.cwd(), 'uploads');
-  if (!existsSync(uploadDir)) {
-    mkdirSync(uploadDir, { recursive: true });
-  }
-  return uploadDir;
-}
+import { UploadsService } from './uploads.service';
 
 @Module({
   imports: [
+    ConfigModule,
     MulterModule.register({
-      storage: diskStorage({
-        destination: (
-          _req: Request,
-          _file: IncomingImageFile,
-          cb: (error: Error | null, destination: string) => void,
-        ) => {
-          const uploadDir = ensureUploadDirectory();
-          cb(null, uploadDir);
-        },
-        filename: (
-          _req: Request,
-          file: IncomingImageFile,
-          cb: (error: Error | null, filename: string) => void,
-        ) => {
-          const uniqueSuffix = `${Date.now()}-${randomUUID()}`;
-          const fileExt = extname(file.originalname) || '';
-          cb(null, `${uniqueSuffix}${fileExt.toLowerCase()}`);
-        },
-      }),
+      storage: memoryStorage(),
       fileFilter: (
         _req: Request,
-        file: IncomingImageFile,
+        file: Express.Multer.File,
         cb: FileFilterCallback,
       ) => {
         if (!file.mimetype.startsWith('image/')) {
@@ -60,5 +30,6 @@ function ensureUploadDirectory(): string {
     }),
   ],
   controllers: [UploadsController],
+  providers: [UploadsService],
 })
 export class UploadsModule {}
