@@ -15,8 +15,12 @@ describe('AppController', () => {
   });
 
   describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+    it('should return service health payload', () => {
+      expect(appController.getHealth()).toEqual({
+        status: 'ok',
+        service: 'ama-cmu-backend',
+        message: 'AMA CMU content API is running',
+      });
     });
   });
 });

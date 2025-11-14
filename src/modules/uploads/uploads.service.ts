@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { randomUUID } from 'crypto';
@@ -15,6 +15,7 @@ type UploadResult = {
 
 @Injectable()
 export class UploadsService {
+  private readonly logger = new Logger(UploadsService.name);
   private readonly client?: S3Client;
   private readonly bucketName?: string;
   private readonly publicBaseUrl?: string;
@@ -76,25 +77,29 @@ export class UploadsService {
           ContentType: file.mimetype,
         }),
       );
-      return {
+      const result = {
         path: key,
         url: `${this.publicBaseUrl}/${key}`,
         originalName: file.originalname,
         size: file.size,
         mimetype: file.mimetype,
       };
+      this.logger.log(`Uploaded image to R2: ${result.url}`);
+      return result;
     }
 
     const localPath = join(this.localUploadDir, key);
     writeFileSync(localPath, file.buffer);
     const relative = `/uploads/${key}`;
-    return {
+    const result = {
       path: relative,
       url: `${this.localBaseUrl}${relative}`,
       originalName: file.originalname,
       size: file.size,
       mimetype: file.mimetype,
     };
+    this.logger.log(`Uploaded image to local storage: ${result.url}`);
+    return result;
   }
 }
 
